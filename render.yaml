@@ -1,0 +1,22 @@
+databases:
+  - name: travel-booking-db
+    databaseName: travel_booking_db
+    user: travel_booking_user
+
+services:
+  - type: web
+    name: travel-booking-web
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn travel_booking.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: travel-booking-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: WEB_CONCURRENCY
+        value: 4

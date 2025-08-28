@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}My Bookings - Travel Booking{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">
+    <i class="fas fa-ticket-alt me-2"></i>My Bookings
+</h2>
+
+<!-- Filter Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                {{ form.status }}
+            </div>
+            
+            <div class="col-md-3">
+                <label for="{{ form.travel_type.id_for_label }}" class="form-label">Travel Type</label>
+                {{ form.travel_type }}
+            </div>
+            
+            <div class="col-md-3">
+                <label for="{{ form.date_from.id_for_label }}" class="form-label">From Date</label>
+                {{ form.date_from }}
+            </div>
+            
+            <div class="col-md-3">
+                <label for="{{ form.date_to.id_for_label }}" class="form-label">To Date</label>
+                {{ form.date_to }}
+            </div>
+            
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-filter me-1"></i>Filter
+                </button>
+                <a href="{% url 'my_bookings' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bookings List -->
+{% if bookings %}
+<div class="row">
+    {% for booking in bookings %}
+    <div class="col-lg-6 mb-4">
+        <div class="card booking-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    Booking ID: {{ booking.booking_id|truncatechars:8 }}
+                </small>
+                <span class="badge bg-{% if booking.status == 'Confirmed' %}success{% else %}danger{% endif %} fs-6">
+                    {{ booking.status }}
+                </span>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title">
+                    {% if booking.travel_option.type == 'Flight' %}
+                        <i class="fas fa-plane me-2"></i>
+                    {% elif booking.travel_option.type == 'Train' %}
+                        <i class="fas fa-train me-2"></i>
+                    {% else %}
+                        <i class="fas fa-bus me-2"></i>
+                    {% endif %}
+                    {{ booking.travel_option.source }} → {{ booking.travel_option.destination }}
+                </h6>
+                
+                <p class="card-text">
+                    <small class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>{{ booking.travel_option.datetime|date:"M d, Y" }} at {{ booking.travel_option.datetime|time:"H:i" }}<br>
+                        <i class="fas fa-users me-1"></i>{{ booking.number_of_seats }} seat{{ booking.number_of_seats|pluralize }}<br>
+                        <i class="fas fa-money-bill me-1"></i>Total: <strong class="text-success">${{ booking.total_price }}</strong><br>
+                        <i class="fas fa-clock me-1"></i>Booked: {{ booking.booking_date|date:"M d, Y H:i" }}
+                    </small>
+                </p>
+                
+                {% if booking.travel_option.datetime < now %}
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-history me-1"></i>Past Travel
+                    </span>
+                {% elif booking.status == 'Confirmed' %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-check-circle me-1"></i>Upcoming
+                    </span>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'travel_option_detail' booking.travel_option.travel_id %}" class="btn btn-outline-primary btn-sm me-2">
+                    <i class="fas fa-info-circle me-1"></i>Details
+                </a>
+                {% if booking.status == 'Confirmed' and booking.travel_option.datetime > now %}
+                    <a href="{% url 'cancel_booking' booking.booking_id %}" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Booking Statistics -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-success">{{ bookings|length }}</h5>
+                <small class="text-muted">Total Bookings</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-primary">
+                    {% for booking in bookings %}
+                        {% if booking.status == 'Confirmed' %}{{ forloop.counter0|add:1 }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </h5>
+                <small class="text-muted">Active Bookings</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-warning">
+                    {% for booking in bookings %}
+                        {% if booking.status == 'Cancelled' %}{{ forloop.counter0|add:1 }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </h5>
+                <small class="text-muted">Cancelled</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+    <h4>No bookings found</h4>
+    <p class="text-muted">You haven't made any bookings yet. Start exploring travel options!</p>
+    <a href="{% url 'travel_options_list' %}" class="btn btn-primary">
+        <i class="fas fa-search me-2"></i>Search Travel Options
+    </a>
+</div>
+{% endif %}
+{% endblock %}

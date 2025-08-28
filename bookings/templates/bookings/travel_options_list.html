@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Travel Options - Travel Booking{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">
+    <i class="fas fa-search me-2"></i>Search Travel Options
+</h2>
+
+<!-- Filter Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="{{ form.source.id_for_label }}" class="form-label">Source</label>
+                {{ form.source }}
+            </div>
+            
+            <div class="col-md-4">
+                <label for="{{ form.destination.id_for_label }}" class="form-label">Destination</label>
+                {{ form.destination }}
+            </div>
+            
+            <div class="col-md-4">
+                <label for="{{ form.travel_type.id_for_label }}" class="form-label">Travel Type</label>
+                {{ form.travel_type }}
+            </div>
+            
+            <div class="col-md-3">
+                <label for="{{ form.date_from.id_for_label }}" class="form-label">From Date</label>
+                {{ form.date_from }}
+            </div>
+            
+            <div class="col-md-3">
+                <label for="{{ form.date_to.id_for_label }}" class="form-label">To Date</label>
+                {{ form.date_to }}
+            </div>
+            
+            <div class="col-md-3">
+                <label for="{{ form.min_price.id_for_label }}" class="form-label">Min Price</label>
+                {{ form.min_price }}
+            </div>
+            
+            <div class="col-md-3">
+                <label for="{{ form.max_price.id_for_label }}" class="form-label">Max Price</label>
+                {{ form.max_price }}
+            </div>
+            
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search me-1"></i>Search
+                </button>
+                <a href="{% url 'travel_options_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results -->
+{% if travel_options %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Travel Options Found: {{ travel_options.count }}</h4>
+</div>
+
+<div class="row">
+    {% for option in travel_options %}
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 travel-option-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="badge {% if option.type == 'Flight' %}bg-primary{% elif option.type == 'Train' %}bg-success{% else %}bg-warning{% endif %} fs-6">
+                    {% if option.type == 'Flight' %}
+                        <i class="fas fa-plane me-1"></i>
+                    {% elif option.type == 'Train' %}
+                        <i class="fas fa-train me-1"></i>
+                    {% else %}
+                        <i class="fas fa-bus me-1"></i>
+                    {% endif %}
+                    {{ option.type }}
+                </span>
+                <span class="h5 mb-0 text-success">${{ option.price }}</span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ option.source }} → {{ option.destination }}</h5>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>{{ option.datetime|date:"M d, Y" }}
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>{{ option.datetime|time:"H:i" }}
+                        </small>
+                    </div>
+                </div>
+                
+                <p class="card-text mt-2">
+                    <span class="badge bg-info">
+                        <i class="fas fa-chair me-1"></i>{{ option.available_seats }} seats available
+                    </span>
+                </p>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'travel_option_detail' option.travel_id %}" class="btn btn-outline-primary btn-sm me-2">
+                    <i class="fas fa-info-circle me-1"></i>View Details
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'book_travel' option.travel_id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-ticket-alt me-1"></i>Book Now
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-sign-in-alt me-1"></i>Login to Book
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+    <h4>No travel options found</h4>
+    <p class="text-muted">Try adjusting your search criteria or check back later.</p>
+</div>
+{% endif %}
+{% endblock %}

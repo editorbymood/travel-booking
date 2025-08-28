@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancel Booking - Travel Booking{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h3 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Cancel Booking
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-info-circle me-2"></i>Are you sure you want to cancel this booking?</h5>
+                    <p class="mb-0">This action cannot be undone. The seats will be returned to available inventory.</p>
+                </div>
+
+                <!-- Booking Details -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">Booking Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Booking ID:</strong> {{ booking.booking_id|truncatechars:8 }}</p>
+                                <p><strong>Travel Type:</strong> 
+                                    {% if booking.travel_option.type == 'Flight' %}
+                                        <i class="fas fa-plane me-1"></i>
+                                    {% elif booking.travel_option.type == 'Train' %}
+                                        <i class="fas fa-train me-1"></i>
+                                    {% else %}
+                                        <i class="fas fa-bus me-1"></i>
+                                    {% endif %}
+                                    {{ booking.travel_option.type }}
+                                </p>
+                                <p><strong>Route:</strong> {{ booking.travel_option.source }} → {{ booking.travel_option.destination }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Travel Date:</strong> {{ booking.travel_option.datetime|date:"F d, Y" }}</p>
+                                <p><strong>Travel Time:</strong> {{ booking.travel_option.datetime|time:"H:i" }}</p>
+                                <p><strong>Seats:</strong> {{ booking.number_of_seats }}</p>
+                                <p><strong>Total Price:</strong> <span class="text-success">${{ booking.total_price }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cancellation Form -->
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-times me-2"></i>Yes, Cancel This Booking
+                        </button>
+                        <a href="{% url 'my_bookings' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>No, Keep Booking
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
